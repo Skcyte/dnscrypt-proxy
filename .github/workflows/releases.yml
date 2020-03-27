@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set env
+        run: echo ::set-env name=VERSION::$(grep "version=" module.prop | sed 's/.*=//')
+      - name: Build
+        run: |
+          zip -r9 dnscrypt-proxy-android-magisk-$VERSION-all.zip . -x *.git* dnscrypt-proxy-android*
+          zip -r9 dnscrypt-proxy-android-magisk-$VERSION-arm64.zip . -x *.git* dnscrypt-proxy-android* binaries/dnscrypt-proxy-arm binaries/dnscrypt-proxy-i386 binaries/dnscrypt-proxy-x86_64
+          zip -r9 dnscrypt-proxy-android-magisk-$VERSION-arm.zip . -x *.git* dnscrypt-proxy-android* binaries/dnscrypt-proxy-arm64 binaries/dnscrypt-proxy-i386 binaries/dnscrypt-proxy-x86_64
+          zip -r9 dnscrypt-proxy-android-magisk-$VERSION-i386.zip . -x *.git* dnscrypt-proxy-android* binaries/dnscrypt-proxy-arm binaries/dnscrypt-proxy-arm64 binaries/dnscrypt-proxy-x86_64
+          zip -r9 dnscrypt-proxy-android-magisk-$VERSION-x86_64.zip . -x *.git* dnscrypt-proxy-android* binaries/dnscrypt-proxy-arm binaries/dnscrypt-proxy-arm64 binaries/dnscrypt-proxy-i386
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dnscrypt-proxy-android-magisk*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

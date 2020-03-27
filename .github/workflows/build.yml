@@ -1,0 +1,33 @@
+name: build
+on: push
+
+jobs:
+  build:
+    name: Update dnscrypt-proxy
+    runs-on: ubuntu-latest
+    if: "contains(github.event.head_commit.message, '[update]')"
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Set env
+      run: echo ::set-env name=VERSION::$(grep "version=" module.prop | sed 's/.*v//')
+    - name: Create local changes
+      run: |
+        wget -q https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/$VERSION/dnscrypt-proxy-android_arm64-$VERSION.zip
+        wget -q https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/$VERSION/dnscrypt-proxy-android_arm-$VERSION.zip
+        wget -q https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/$VERSION/dnscrypt-proxy-android_i386-$VERSION.zip
+        wget -q https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/$VERSION/dnscrypt-proxy-android_x86_64-$VERSION.zip
+        unzip -op dnscrypt-proxy-android_arm64-$VERSION.zip android-arm64/dnscrypt-proxy > binaries/dnscrypt-proxy-arm64
+        unzip -op dnscrypt-proxy-android_arm-$VERSION.zip android-arm/dnscrypt-proxy > binaries/dnscrypt-proxy-arm
+        unzip -op dnscrypt-proxy-android_i386-$VERSION.zip android-i386/dnscrypt-proxy > binaries/dnscrypt-proxy-i386
+        unzip -op dnscrypt-proxy-android_x86_64-$VERSION.zip android-x86_64/dnscrypt-proxy > binaries/dnscrypt-proxy-x86_64
+    - name: Commit files
+      run: |
+        git config --local user.email "deace.inc@gmail.com"
+        git config --local user.name "Aditya Phra"
+        git commit -m "Update dnscrypt-proxy to $VERSION" -a
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: true

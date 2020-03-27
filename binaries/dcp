@@ -1,0 +1,100 @@
+#!/system/bin/sh
+
+# Variables
+DNSCRYPT_PROXY=/data/adb/modules/dnscrypt-proxy/system/bin/dnscrypt-proxy
+CONFIG_FILE=/data/media/0/dnscrypt-proxy/dnscrypt-proxy.toml
+LOG_FILE=/data/media/0/dnscrypt-proxy/dnscrypt-proxy.log
+L_CONFIG_FILE=/data/media/0/dnscrypt-proxy/dnscrypt-proxy.conf
+
+# load l configuration
+if [ -s $L_CONFIG_FILE ]; then
+	. $L_CONFIG_FILE
+fi
+
+# check root
+id="$(id)"; id="${id#*=}"; id="${id%%\(*}"; id="${id%% *}"
+if [ "$id" != "0" ] && [ "$id" != "root" ]; then
+	echo "Root access is required to use dnscrypt-proxy manager."
+	exit
+fi
+
+# check dnscrypt-proxy configuration
+RESULT="$($DNSCRYPT_PROXY -config $CONFIG_FILE -loglevel 6 -check 2>&1)"
+if [[ $RESULT == *"FATAL"* ]]; then
+	sed 's/^.*] //' <<< $RESULT
+	echo ""
+	echo "Check your configuration!"
+	exit
+fi
+
+# auto_redir function
+function auto_redir() {
+if [ "$AUTO_REDIRECTION" = "true" ]; then
+	iptables -t nat $1 OUTPUT -p tcp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination 127.0.0.1:5354 > /dev/null 2>&1
+	iptables -t nat $1 OUTPUT -p udp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination 127.0.0.1:5354 > /dev/null 2>&1
+	ip6tables -t nat $1 OUTPUT -p tcp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination [::1]:5354 > /dev/null 2>&1
+	ip6tables -t nat $1 OUTPUT -p udp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination [::1]:5354 > /dev/null 2>&1
+fi
+}
+
+# main function
+case $1 in
+	'start')
+		echo "Starting dnscrypt-proxy..."
+		$DNSCRYPT_PROXY -config $CONFIG_FILE -logfile $LOG_FILE -loglevel 2 > /dev/null 2>&1 &
+		auto_redir -A
+		sleep 1
+		echo "Done."
+		;;
+
+	'stop')
+		echo "Stopping dnscrypt-proxy..."
+		pkill dnscrypt-proxy > /dev/null 2>&1
+		auto_redir -D
+		sleep 1
+		echo "Done."
+		;;
+
+	'restart')
+		echo "Restarting dnscrypt-proxy..."
+		pkill dnscrypt-proxy > /dev/null 2>&1
+		$DNSCRYPT_PROXY -config $CONFIG_FILE -logfile $LOG_FILE -loglevel 2 > /dev/null 2>&1 &
+		sleep 1
+		echo "Done."
+		;;
+
+	'enable')
+		echo "Enabling auto redirection..."
+		echo "AUTO_REDIRECTION=true" > $L_CONFIG_FILE
+		sleep 1
+		echo "Done."
+		;;
+
+	'disable')
+		echo "Disabling auto redirection..."
+		echo "AUTO_REDIRECTION=false" > $L_CONFIG_FILE
+		sleep 1
+		echo "Done."
+		;;
+
+	'log')
+		if [ -s $LOG_FILE ]; then
+			clear
+			less $LOG_FILE
+		else
+			echo "dcp: Log file is empty."
+		fi
+		;;
+
+	'flush')
+		echo "Flushing iptables..."
+		iptables -t nat -F > /dev/null 2>&1
+		ip6tables -t nat -F > /dev/null 2>&1
+		sleep 1
+		echo "Done."
+		;;
+
+	*)
+		echo "usage:  dcp {start|stop|restart|enable|disable|log|flush}"
+		;;
+esac
