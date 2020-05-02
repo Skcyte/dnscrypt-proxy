@@ -17,34 +17,28 @@ A flexible DNS proxy, with support for modern encrypted DNS protocols such as [D
 - open terminal then type: 
 ```
 su
-dcp {start|stop|restart|enable|disable|log|flush}
+dcp {start|stop|restart|enable|disable|log}
 ```
 
 - `start | stop | restart` : manage the dnscrypt-proxy service.
-- `enable | disable` : enable/disable automatically redirection at startup.
+- `enable | disable` : enable/disable automatically dns redirection at startup.
 - `log` : view logging information.
-- `flush` : flush/clear iptables
-
-### Automatically redirection
-- To enable automatically redirection at start up, open terminal then type:
-- `dcp enable`
-- Enjoy.
 
 ### Set DNS server manually with 3rd-party app (not included in this module)
 - DNS server address is 127.0.0.1:5354 for ipv4 and [::1]:5354 for ipv6
 - If you use AfWall, you can write this enter custom script
   ```
-  iptables -t nat -A OUTPUT -p tcp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination 127.0.0.1:5354
-  iptables -t nat -A OUTPUT -p udp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination 127.0.0.1:5354
-  ip6tables -t nat -A OUTPUT -p tcp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination [::1]:5354
-  ip6tables -t nat -A OUTPUT -p udp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination [::1]:5354
+  iptables -t nat -A OUTPUT -p tcp ! -d 9.9.9.9 --dport 53 -j DNAT --to-destination 127.0.0.1:5354
+  iptables -t nat -A OUTPUT -p udp ! -d 9.9.9.9 --dport 53 -j DNAT --to-destination 127.0.0.1:5354
+  ip6tables -t nat -A OUTPUT -p tcp ! -d 9.9.9.9 --dport 53 -j DNAT --to-destination [::1]:5354
+  ip6tables -t nat -A OUTPUT -p udp ! -d 9.9.9.9 --dport 53 -j DNAT --to-destination [::1]:5354
    ```
   and this shutdown script
   ```
-  iptables -t nat -D OUTPUT -p tcp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination 127.0.0.1:5354
-  iptables -t nat -D OUTPUT -p udp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination 127.0.0.1:5354
-  ip6tables -t nat -D OUTPUT -p tcp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination [::1]:5354
-  ip6tables -t nat -D OUTPUT -p udp ! -d 1.1.1.1 --dport 53 -j DNAT --to-destination [::1]:5354
+  iptables -t nat -D OUTPUT -p tcp ! -d 9.9.9.9 --dport 53 -j DNAT --to-destination 127.0.0.1:5354
+  iptables -t nat -D OUTPUT -p udp ! -d 9.9.9.9 --dport 53 -j DNAT --to-destination 127.0.0.1:5354
+  ip6tables -t nat -D OUTPUT -p tcp ! -d 9.9.9.9 --dport 53 -j DNAT --to-destination [::1]:5354
+  ip6tables -t nat -D OUTPUT -p udp ! -d 9.9.9.9 --dport 53 -j DNAT --to-destination [::1]:5354
     ```
 
 ## Configuration (post-installing)

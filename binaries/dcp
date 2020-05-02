@@ -86,14 +86,6 @@ case $1 in
 		fi
 		;;
 
-	'flush')
-		echo "Flushing iptables..."
-		iptables -t nat -F > /dev/null 2>&1
-		ip6tables -t nat -F > /dev/null 2>&1
-		sleep 1
-		echo "Done."
-		;;
-
 	*)
 		echo "usage:  dcp {start|stop|restart|enable|disable|log|flush}"
 		;;
