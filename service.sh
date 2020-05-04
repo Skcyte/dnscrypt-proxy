@@ -7,6 +7,9 @@ if [ -s $L_CONFIG_FILE ]; then
   . $L_CONFIG_FILE
 fi
 
+# clear log
+rm -f $LOG_FILE
+
 # dnscrypt-proxy service.sh
 $MODDIR/system/bin/dnscrypt-proxy -config $CONFIG_FILE -logfile $LOG_FILE > /dev/null 2>&1 &
 
