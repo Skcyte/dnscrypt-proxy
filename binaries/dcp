@@ -79,7 +79,6 @@ case $1 in
 
 	'log')
 		if [ -s $LOG_FILE ]; then
-			clear
 			less $LOG_FILE
 		else
 			echo "dcp: Log file is empty."
