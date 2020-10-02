@@ -79,7 +79,6 @@ case $1 in
 
 	'log')
 		if [ -s $LOG_FILE ]; then
-			clear
 			less $LOG_FILE
 		else
 			echo "dcp: Log file is empty."
@@ -87,6 +86,6 @@ case $1 in
 		;;
 
 	*)
-		echo "usage:  dcp {start|stop|restart|enable|disable|log|flush}"
+		echo "usage:  dcp {start|stop|restart|enable|disable|log}"
 		;;
 esac
